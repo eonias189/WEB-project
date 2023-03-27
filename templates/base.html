@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <style>
+        {% for css in styles %}
+            @import url("{{css}}");
+        {% endfor %}
+    </style>
+    <title>{{title}}</title>
+</head>
+<body>
+<!--Тут что-то до содержимого конкретной страницы-->
+<main role="main" class="container">
+    {% block content %}{% endblock %}
+</main>
+<!--Тут что-то после содержимого конкретной страницы-->
+</body>
+</html>
