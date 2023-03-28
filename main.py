@@ -2,6 +2,9 @@ import flask
 import datetime as dt
 from flask import Flask, request, url_for, render_template, redirect, jsonify, make_response, session
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
+from flask_restful import Api
+
+import data.users_resource
 from data import db_session
 from data.users import User
 from flask_forms import RegisterForm
@@ -13,6 +16,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Country_Guesser_Secret_Key'
 app.config['PERMANENT_SESSION_LIFETIME'] = dt.timedelta(days=365)
 
+api = Api(app)
+api.add_resource(data.users_resource.UserResource, '/api/users/<int:user_id>')
+api.add_resource(data.users_resource.UserListResource, '/api/users')
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -21,6 +28,21 @@ login_manager.init_app(app)
 def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
+
+
+@app.errorhandler(400)
+def bad_request(error):
+    return make_response(jsonify({'error': 'Bad Request'}))
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not Found'}))
+
+
+@app.errorhandler(401)
+def access_denied(_):
+    return make_response(jsonify({'error': 'Access Denied'}))
 
 
 @app.route('/logout')

@@ -10,7 +10,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     login = sqlalchemy.Column(sqlalchemy.String, unique=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String)
     score = sqlalchemy.Column(sqlalchemy.Integer, default=0)
-    register_date = sqlalchemy.Column(sqlalchemy.DateTime)
+    register_date = sqlalchemy.Column(sqlalchemy.DATETIME)
 
     def set_password(self, password):
         self.hashed_password = password
