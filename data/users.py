@@ -1,6 +1,7 @@
 import sqlalchemy
 from flask_login import UserMixin
 from sqlalchemy_serializer import SerializerMixin
+from werkzeug.security import check_password_hash
 from .db_session import SqlAlchemyBase
 
 
@@ -16,7 +17,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
         self.hashed_password = password
 
     def check_password(self, password):
-        return password == self.hashed_password
+        return check_password_hash(self.hashed_password, password)
 
     def __repr__(self):
-        return f'<User> {self.id} {self.login} {self.score}'
+        return f'<User> id: {self.id}; login: {self.login}; score: {self.score}'

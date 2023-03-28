@@ -9,3 +9,10 @@ class RegisterForm(FlaskForm):
     password = PasswordField('Пароль', validators=[DataRequired()])
     repeat_password = PasswordField('Повторите пароль', validators=[DataRequired()])
     submit = SubmitField('Зарегистрироваться')
+
+
+class LoginForm(FlaskForm):
+    login = StringField('Логин', validators=[DataRequired()])
+    password = PasswordField('Пароль', validators=[DataRequired()])
+    remember_me = BooleanField('Запомнить меня')
+    submit = SubmitField('Войти')

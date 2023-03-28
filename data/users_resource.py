@@ -3,7 +3,7 @@ from flask_restful import abort, Resource
 from flask import jsonify, request
 from . import db_session
 from .users import User
-from .api_key_tools import check_key, get_keys
+from .api_key_tools import check_key
 from .parsers import UserPostParser, UserPutParser
 
 
@@ -66,6 +66,8 @@ class UserListResource(Resource):
         db_sess = db_session.create_session()
         if db_sess.query(User).get(args['id']):
             return jsonify({'error': 'Id is already taken'})
+        if db_sess.query(User).filter(User.login == args['login']).all():
+            return jsonify({'error': 'Login is already taken'})
         user = User(id=args['id'], login=args['login'], hashed_password=args['hashed_password'],
                     score=args.get('score', 0), register_date=dt.datetime.now())
         db_sess.add(user)

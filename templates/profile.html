@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if user.is_authenticated and user.id == response['id'] %}
+<a class="btn btn-primary" href="/logout" style={{button_style}}>Выйти</a>
+{% endif %}
+<h1>Пользователь {{response['login']}}:</h1>
+<h2>Очки: {{response['score']}}</h2>
+<h2>Дата регистрации: {{response['register_date']}}</h2>
+{% endblock %}
