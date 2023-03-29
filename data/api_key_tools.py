@@ -13,6 +13,24 @@ def generate_key(n=15):
     return ''.join([secrets.choice(SYMBOLS) for _ in range(n)])
 
 
+def check_questoin_key(key, from_data=False):
+    full_url = 'question_api_key.json' if from_data else 'data/question_api_key.json'
+    with open(full_url, 'r') as f:
+        data = json.load(f)
+    return key in data['KEYS']
+
+
+def create_question_key(from_data=False):
+    full_url = 'question_api_key.json' if from_data else 'data/question_api_key.json'
+    with open(full_url, 'r') as f:
+        data = json.load(f)
+    key = generate_key(18)
+    data['KEYS'] += [key]
+    with open(full_url, 'w') as f:
+        json.dump(data, f, indent=2)
+    return key
+
+
 def get_keys(method=None, from_data=False):
     full_url = URL if from_data else 'data/' + URL
     with open(full_url, 'r') as f:
@@ -44,4 +62,4 @@ def check_key(method, key, from_data=False):
 
 
 if __name__ == '__main__':
-    print(get_keys(from_data=True))
+    print(create_question_key(from_data=True))

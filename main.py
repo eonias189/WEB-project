@@ -1,12 +1,13 @@
 import flask
 import requests
 import datetime as dt
+import data.users_resource
+import data.question_resource
+
 from flask import Flask, request, url_for, render_template, redirect, jsonify, make_response, session
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 from flask_restful import Api
 from werkzeug.security import generate_password_hash
-
-import data.users_resource
 from data import db_session
 from data.users import User
 from data.api_key_tools import create_key
@@ -23,6 +24,7 @@ api = Api(app)
 api.add_resource(data.users_resource.UserResource, '/api/users/<int:user_id>')
 api.add_resource(data.users_resource.UserListResource, '/api/users')
 api.add_resource(data.users_resource.LoginResource, '/api/login')
+api.add_resource(data.question_resource.QuestionResource, '/api/question')
 
 login_manager = LoginManager()
 login_manager.init_app(app)
