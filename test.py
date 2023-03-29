@@ -1,8 +1,10 @@
 from pprint import pprint
-from data.api_key_tools import create_key, get_keys
-import requests
+from data import db_session
+from data.countries import Country
 
-url = 'http://127.0.0.1:5000/api/login'
-json = {'login': 'eonias', 'password': 'qwerty'}
-params = {'key': create_key('LOGIN')}
-pprint(requests.get(url, params=params, json=json).json())
+db_session.global_init('db/country_guesser.db')
+db_sess = db_session.create_session()
+country = Country(name='Бразилия', latitude=-15.802118, longitude=-47.889062)
+db_sess.add(country)
+db_sess.commit()
+print(country)
