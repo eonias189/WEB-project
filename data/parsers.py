@@ -15,3 +15,10 @@ class UserPutParser(reqparse.RequestParser):
         super().__init__()
         self.add_argument('hashed_password')
         self.add_argument('score', type=int)
+
+
+class LoginParser(reqparse.RequestParser):
+    def __init__(self):
+        super().__init__()
+        self.add_argument('login', required=True)
+        self.add_argument('password', required=True)

@@ -2,5 +2,6 @@
   "GET": [],
   "POST": [],
   "DELETE": [],
-  "PUT": []
+  "PUT": [],
+  "LOGIN": []
 }

@@ -22,6 +22,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = dt.timedelta(days=365)
 api = Api(app)
 api.add_resource(data.users_resource.UserResource, '/api/users/<int:user_id>')
 api.add_resource(data.users_resource.UserListResource, '/api/users')
+api.add_resource(data.users_resource.LoginResource, '/api/login')
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -114,10 +115,15 @@ def login():
               'user': current_user}
     if form.validate_on_submit():
         login, password, remember_me = form.login.data, form.password.data, form.remember_me.data
+        url = 'http://127.0.0.1:5000/api/login'
+        json = {'login': login, 'password': password}
+        paramss = {'key': create_key('LOGIN')}
+        messages_ru = {'Login or password is wrong': 'Неверный логин или пароль'}
+        response = requests.get(url, json=json, params=paramss).json()
+        if 'error' in response:
+            return render_template('login.html', **params, message=messages_ru[response['error']])
         db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.login == login).first()
-        if not user or not user.check_password(password):
-            return render_template('login.html', **params, message='Неверный логин или пароль')
+        user = db_sess.query(User).get(response['id'])
         login_user(user, remember=remember_me)
         return redirect('/')
     return render_template('login.html', **params)

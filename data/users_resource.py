@@ -4,7 +4,7 @@ from flask import jsonify, request
 from . import db_session
 from .users import User
 from .api_key_tools import check_key
-from .parsers import UserPostParser, UserPutParser
+from .parsers import UserPostParser, UserPutParser, LoginParser
 
 
 def abort_if_not_found(user_id):
@@ -14,8 +14,10 @@ def abort_if_not_found(user_id):
         return abort(404, message=f'user {user_id} not found')
 
 
-def abort_if_access_denied(request):
-    if 'key' not in request.args or not check_key(request.method, request.args['key']):
+def abort_if_access_denied(request, method=None):
+    if method is None:
+        method = request.method
+    if 'key' not in request.args or not check_key(method, request.args['key']):
         return abort(401, message='access denied')
 
 
@@ -73,3 +75,15 @@ class UserListResource(Resource):
         db_sess.add(user)
         db_sess.commit()
         return jsonify({'success': 'OK'})
+
+
+class LoginResource(Resource):
+    def get(self):
+        abort_if_access_denied(request, method='LOGIN')
+        parser = LoginParser()
+        args = parser.parse_args()
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.login == args['login']).first()
+        if not user or not user.check_password(args['password']):
+            return jsonify({'error': 'Login or password is wrong'})
+        return jsonify({'success': 'OK', 'id': user.id})
