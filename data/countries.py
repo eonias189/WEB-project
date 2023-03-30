@@ -9,6 +9,11 @@ class Country(SqlAlchemyBase, SerializerMixin):
     name = sqlalchemy.Column(sqlalchemy.String, unique=True)
     latitude = sqlalchemy.Column(sqlalchemy.Float)
     longitude = sqlalchemy.Column(sqlalchemy.Float)
+    complexity = sqlalchemy.Column(sqlalchemy.String)
+    r = sqlalchemy.Column(sqlalchemy.Float)
+    l = sqlalchemy.Column(sqlalchemy.Float)
+    u = sqlalchemy.Column(sqlalchemy.Float)
+    d = sqlalchemy.Column(sqlalchemy.Float)
 
     def __repr__(self):
         latitude = str(self.latitude) + ' с.ш.' if self.latitude > 0 else str(-self.latitude) + ' ю.ш.'

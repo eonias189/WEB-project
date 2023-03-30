@@ -31,11 +31,16 @@ def get_coords(toponym_name, api_key):
     return (ll, geo)
 
 
-def get_spn(geo):
-    r, l, u, d, ll = geo
-    dx = abs(r - l) / 4
-    dy = abs(u - d) / 4
+def get_spn(geo, n=4):
+    r, l, u, d = geo
+    dx = abs(r - l) / n
+    dy = abs(u - d) / n
     return f'{dx},{dy}'
+
+
+def get_bbox(geo):
+    r, l, u, d = geo
+    return f'{l},{d}~{r},{u}'
 
 
 def get_dist(p1, p2):
@@ -47,19 +52,13 @@ def get_dist(p1, p2):
     return math.sqrt(sx ** 2 + sy ** 2)
 
 
-def get_image(coords, type='map', point=None, spn=None):
-    if not spn:
-        ll, geo = coords
-    else:
-        ll = coords
-    if not spn:
-        spn = get_spn(geo)
-    map_params = {
-        "ll": ll,
-        "spn": spn,
-        "l": type}
+def get_image(ll=None, bbox=None, spn=None, type='map', point=None, z=None):
+    map_params = {"l": type}
+    for i in [(ll, 'll'), (bbox, 'bbox'), (spn, 'spn'), (z, 'z')]:
+        if i[0] is not None:
+            map_params[i[1]] = i[0]
     if point:
-        map_params['pt'] = f'{point},comma'
+        map_params['pt'] = f'{point},flag'
     map_api_server = "http://static-maps.yandex.ru/1.x/"
     response = requests.get(map_api_server, params=map_params)
     if not response:
