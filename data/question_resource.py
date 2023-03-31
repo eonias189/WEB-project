@@ -40,7 +40,8 @@ class QuestionResource(Resource):
             country = db_sess.query(Country).filter(Country.name == request.args['country']).first()
         country_coords = (country.latitude, country.longitude)
         neighbours = sorted(
-            [(i.name, get_dist((i.latitude, i.longitude), country_coords)) for i in all_countries], key=lambda x: x[1])[
+            [(i.name, get_dist((i.latitude, i.longitude), country_coords)) for i in all_countries if
+             i.name != country.name], key=lambda x: x[1])[
                      1:n_neighbours + 1]
         neighbours = [i[0] for i in neighbours]
         variants_1 = db_sess.query(Country).filter(Country.name.like(f'{country.name[0]}%'),
@@ -52,7 +53,9 @@ class QuestionResource(Resource):
         else:
             variants = random.sample(variants_1, n_countries_name_like)
         variants = [i.name for i in variants]
-        randoms = random.sample([i.name for i in all_countries if i not in neighbours and i not in variants], n_randoms)
+        randoms = random.sample(
+            [i.name for i in all_countries if i not in neighbours and i not in variants and i.name != country.name],
+            n_randoms)
         group_1 = ['Австралия', 'Алжир', 'Ангола', 'Аргентина', 'Афганистан', 'Боливия', 'Бразилия', 'Великобритания',
                    'Венесуэла', 'Вьетнам', 'Германия', 'Гонконг', 'Египет', 'Замбия', 'Индия', 'Индонезия', 'Иран',
                    'Исландия', 'Испания', 'Италия', 'Кабо-Верде', 'Казахстан', 'Камерун', 'Канада', 'Кипр', 'Китай',

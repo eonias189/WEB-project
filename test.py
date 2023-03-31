@@ -37,7 +37,7 @@ def test_db():
 
 def test_question_api():
     url = 'http://127.0.0.1:5000/api/question'
-    params = {'key': "ER*los]NtTW:G14SH@", 'country': '', 'complexity': 'impossible'}
+    params = {'key': "ER*los]NtTW:G14SH@", 'country': '', 'complexity': 'easy'}
     response = requests.get(url, params=params).json()
     varinats, content, encoding, country = response['variants'], response['content'], response['encoding'], response[
         'country']
