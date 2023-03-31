@@ -16,15 +16,23 @@ class QuestionResource(Resource):
     def get(self):
         abort_if_access_denied(request)
         complexity_dict = {'easy': (0, 0, 3), 'normal': (1, 1, 1), 'hard': (0, 3, 0)}
+        complexity_level = {'easy': ['e'], 'normal': ['e', 'n'], 'hard': ['e', 'n', 'h']}
         db_sess = db_session.create_session()
+        all_countries = db_sess.query(Country).all()
         if 'complexity' in request.args and request.args['complexity'] in ['easy', 'normal', 'hard']:
-            countries = db_sess.query(Country).filter(Country.complexity == request.args['complexity'][0]).all()
+            countries = db_sess.query(Country).filter(
+                Country.complexity.in_(complexity_level[request.args['complexity']])).all()
             n_countries_name_like, n_neighbours, n_randoms = complexity_dict[request.args['complexity']]
         else:
-            countries = db_sess.query(Country).all()
-            n_countries_name_like = 1
-            n_neighbours = 1
-            n_randoms = 1
+            countries = all_countries.copy()
+            if request.args.get('complexity', '') == 'impossible':
+                n_countries_name_like = 0
+                n_neighbours = 0
+                n_randoms = 0
+            else:
+                n_countries_name_like = 1
+                n_neighbours = 1
+                n_randoms = 1
         if 'country' not in request.args or not db_sess.query(Country).filter(
                 Country.name == request.args['country']).first():
             country = random.choice(countries)
@@ -32,7 +40,7 @@ class QuestionResource(Resource):
             country = db_sess.query(Country).filter(Country.name == request.args['country']).first()
         country_coords = (country.latitude, country.longitude)
         neighbours = sorted(
-            [(i.name, get_dist((i.latitude, i.longitude), country_coords)) for i in countries], key=lambda x: x[1])[
+            [(i.name, get_dist((i.latitude, i.longitude), country_coords)) for i in all_countries], key=lambda x: x[1])[
                      1:n_neighbours + 1]
         neighbours = [i[0] for i in neighbours]
         variants_1 = db_sess.query(Country).filter(Country.name.like(f'{country.name[0]}%'),
@@ -44,7 +52,7 @@ class QuestionResource(Resource):
         else:
             variants = random.sample(variants_1, n_countries_name_like)
         variants = [i.name for i in variants]
-        randoms = random.sample([i.name for i in countries if i not in neighbours and i not in variants], n_randoms)
+        randoms = random.sample([i.name for i in all_countries if i not in neighbours and i not in variants], n_randoms)
         group_1 = ['Австралия', 'Алжир', 'Ангола', 'Аргентина', 'Афганистан', 'Боливия', 'Бразилия', 'Великобритания',
                    'Венесуэла', 'Вьетнам', 'Германия', 'Гонконг', 'Египет', 'Замбия', 'Индия', 'Индонезия', 'Иран',
                    'Исландия', 'Испания', 'Италия', 'Кабо-Верде', 'Казахстан', 'Камерун', 'Канада', 'Кипр', 'Китай',
@@ -63,15 +71,22 @@ class QuestionResource(Resource):
         ll = f'{country.longitude},{country.latitude}'
         geo = (country.r, country.l, country.u, country.d)
         bbox = get_bbox(geo)
+        if request.args.get('complexity', '') != 'impossible':
+            type_ = 'sat,skl'
+        else:
+            type_ = 'sat'
         if country.name in need_another_spn:
             spn = get_spn(geo, n=need_another_spn[country.name])
         else:
             spn = get_spn(geo)
         if country.name not in group_1:
-            content = get_image(bbox=bbox, type='sat,skl', point=ll, z=5)
+            content = get_image(bbox=bbox, type=type_, point=ll, z=5)
         else:
-            content = get_image(ll=ll, spn=spn, type='sat,skl', point=ll)
-        variants = variants + neighbours + [country.name] + randoms
+            content = get_image(ll=ll, spn=spn, type=type_, point=ll)
+        if request.args.get('complexity', '') != 'impossible':
+            variants = variants + neighbours + [country.name] + randoms
+        else:
+            variants = []
         random.shuffle(variants)
         return jsonify({'country': country.name, 'content': content.decode('ISO-8859-1'), 'encoding': 'ISO-8859-1',
                         'variants': variants})
