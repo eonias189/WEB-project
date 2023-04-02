@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, \
-    DateField
+    DateField, SelectField
 from wtforms.validators import DataRequired
 
 
@@ -16,3 +16,9 @@ class LoginForm(FlaskForm):
     password = PasswordField('Пароль', validators=[DataRequired()])
     remember_me = BooleanField('Запомнить меня')
     submit = SubmitField('Войти')
+
+
+class QuestionForm(FlaskForm):
+    select_f = SelectField()
+    ans = StringField('Ответ', validators=[DataRequired()])
+    submit = SubmitField('Ответить')

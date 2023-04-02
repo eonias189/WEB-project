@@ -16,7 +16,7 @@ class QuestionResource(Resource):
     def get(self):
         abort_if_access_denied(request)
         complexity_dict = {'easy': (0, 0, 3), 'normal': (1, 1, 1), 'hard': (0, 3, 0)}
-        complexity_level = {'easy': ['e'], 'normal': ['e', 'n'], 'hard': ['e', 'n', 'h']}
+        complexity_level = {'easy': ['e'], 'normal': ['e', 'n'], 'hard': ['n', 'h']}
         db_sess = db_session.create_session()
         all_countries = db_sess.query(Country).all()
         if 'complexity' in request.args and request.args['complexity'] in ['easy', 'normal', 'hard']:

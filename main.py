@@ -1,4 +1,5 @@
 import flask
+import base64
 import requests
 import datetime as dt
 import data.users_resource
@@ -11,7 +12,7 @@ from werkzeug.security import generate_password_hash
 from data import db_session
 from data.users import User
 from data.api_key_tools import create_key
-from flask_forms import RegisterForm, LoginForm
+from flask_forms import RegisterForm, LoginForm, QuestionForm
 
 db_session.global_init("db/country_guesser.db")
 session = db_session.create_session()
@@ -65,7 +66,10 @@ def index():
     main_css = url_for('static', filename='css/main_css.css')
     params = {'title': 'Главная страница', 'styles': [main_css], 'user': current_user}
     # base.html принимает параметры title, styles(список url css файлов) и user(функцию current_user)
-    return render_template('main_page.html', **params)
+    res = make_response(render_template('main_page.html', **params))
+    res.set_cookie('country', 'c', max_age=0)
+    res.set_cookie('variants', 'v', max_age=0)
+    return res
 
 
 @app.route('/error/<message>')
@@ -129,6 +133,70 @@ def login():
         login_user(user, remember=remember_me)
         return redirect('/')
     return render_template('login.html', **params)
+
+
+def up_score(user, score):
+    params = {'key': create_key('PUT')}
+    score_was = user.score
+    js = {'score': score_was + score}
+    u_id = user.id
+    url = f'http://127.0.0.1:5000/api/users/{u_id}'
+    response = requests.put(url, params=params, json=js)
+
+
+@app.route('/question', methods=['POST', 'GET'])
+def question():
+    complexity_dict = {'easy': 1, 'normal': 5, 'hard': 25, 'impossible': 125}
+    form = QuestionForm()
+    url = 'http://127.0.0.1:5000/api/question'
+    main_css = url_for('static', filename='css/main_css.css')
+    stage = request.args.get('stage', 'start')
+    params = {'title': 'Вопрос', 'styles': [main_css], 'form': form, 'user': current_user, 'stage': stage}
+    if 'country' not in request.cookies:
+        complexity = request.args.get('complexity', '')
+        paramss = {'key': "ER*los]NtTW:G14SH@", 'complexity': complexity}
+        response = requests.get(url, params=paramss).json()
+        country, variants, content, encoding = response['country'], response['variants'], response['content'], response[
+            'encoding']
+    else:
+        country, variants = request.cookies['country'], request.cookies['variants'].split('; ')
+        complexity = request.args.get('complexity', '')
+        paramss = {'key': "ER*los]NtTW:G14SH@", 'complexity': complexity, 'country': country}
+        response = requests.get(url, params=paramss).json()
+        content, encoding = response['content'], response['encoding']
+    content = bytes(content, encoding)
+    content = 'data:image/jpeg;base64,' + str(base64.b64encode(content))[2:-1]
+    params['content'] = content
+    params['complexity'] = complexity
+    if complexity != 'impossible':
+        form.select_f.choices = variants
+    else:
+        form.select_f.choices = ['вариант']
+    if stage != 'end':
+        if request.method == 'POST':
+            ans = form.ans.data if complexity == 'impossible' else form.select_f.data
+            res = make_response(redirect(f'/question?complexity={complexity}&stage=end&ans={ans}'))
+            return res
+        res = make_response(render_template('question.html', **params))
+        res.set_cookie('country', country, max_age=60 * 60)
+        res.set_cookie('variants', '; '.join(variants), max_age=60 * 60)
+        return res
+    else:
+        ans = request.args['ans']
+        form.select_f.data = ans
+        form.ans.data = ans
+        if ans.lower() == country.lower():
+            style_ = 'background-color: Green'
+            if current_user.is_authenticated:
+                up_score(current_user, complexity_dict.get(complexity, 1))
+        else:
+            style_ = 'background-color: Red'
+        params['style_'] = style_
+        params['next'] = f'/question?complexity={complexity}'
+        res = make_response(render_template('question.html', **params))
+        res.set_cookie('country', country, max_age=0)
+        res.set_cookie('variants', '; '.join(variants), max_age=0)
+        return res
 
 
 if __name__ == '__main__':

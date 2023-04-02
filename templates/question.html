@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<img src={{content}}>
+<form action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    {% if complexity != 'impossible' %}
+    <p>{{form.select_f(style=style_)}}</p>
+    {% else %}
+    <p>{{ form.ans.label }}<br>
+        {{ form.ans(class="form-control", style=style_) }}
+        {% for error in form.ans.errors %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endfor %}
+    </p>
+    {% endif %}
+    {% if stage != 'end' %}
+    <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+    {% else %}
+    <p>
+        <a class="btn btn-primary" href={{next}} style={{button_style}}>Далее</a>
+        <a class="btn btn-primary" href="/" style={{button_style}}>На главную страницу</a>
+    </p>
+    {% endif %}
+</form>
+{% endblock %}
