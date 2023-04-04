@@ -5,8 +5,10 @@ import datetime as dt
 import data.users_resource
 import data.question_resource
 
-from flask import Flask, request, url_for, render_template, redirect, jsonify, make_response, session
-from flask_login import LoginManager, current_user, login_required, login_user, logout_user
+from flask import Flask, request, url_for, render_template, redirect, jsonify, \
+    make_response, session
+from flask_login import LoginManager, current_user, login_required, login_user, \
+    logout_user
 from flask_restful import Api
 from werkzeug.security import generate_password_hash
 from data import db_session
@@ -64,7 +66,8 @@ def logout():
 @app.route('/')
 def index():
     main_css = url_for('static', filename='css/main_css.css')
-    params = {'title': 'Главная страница', 'styles': [main_css], 'user': current_user}
+    params = {'title': 'Главная страница', 'styles': [main_css],
+              'user': current_user}
     # base.html принимает параметры title, styles(список url css файлов) и user(функцию current_user)
     res = make_response(render_template('main_page.html', **params))
     res.set_cookie('country', 'c', max_age=0)
@@ -75,7 +78,8 @@ def index():
 @app.route('/error/<message>')
 def error_page(message):
     main_css = url_for('static', filename='css/main_css.css')
-    params = {'title': 'Ошибка', 'styles': [main_css], 'user': current_user, 'message': message}
+    params = {'title': 'Ошибка', 'styles': [main_css], 'user': current_user,
+              'message': message}
     return render_template('error.html', **params)
 
 
@@ -88,7 +92,9 @@ def user_profile(user_id):
     if 'user' not in response:
         return redirect(f'/error/{response["message"]}')
     params = {'title': response['user']['login'],
-              'styles': [main_css, url_for('static', filename='css/profile_css.css')], 'user': current_user,
+              'styles': [main_css,
+                         url_for('static', filename='css/profile_css.css')],
+              'user': current_user,
               'response': response['user']}
     return render_template('profile.html', **params)
 
@@ -97,18 +103,22 @@ def user_profile(user_id):
 def register():
     form = RegisterForm()
     main_css = url_for('static', filename='css/main_css.css')
-    params = {'title': 'Регистрация', 'styles': [main_css, url_for('static', filename='css/form_css.css')],
+    params = {'title': 'Регистрация', 'styles': [main_css, url_for('static',
+                                                                   filename='css/form_css.css')],
               'form': form, 'user': current_user}
     if form.validate_on_submit():
         if form.password.data != form.repeat_password.data:
-            return render_template('register.html', **params, message='Пароли не совпадают')
+            return render_template('register.html', **params,
+                                   message='Пароли не совпадают')
         messages_ru = {'Login is already taken': 'Этот логин уже занят'}
         url = 'http://127.0.0.1:5000/api/users'
-        json = {'login': form.login.data, 'hashed_password': generate_password_hash(form.password.data)}
+        json = {'login': form.login.data,
+                'hashed_password': generate_password_hash(form.password.data)}
         paramss = {'key': create_key('POST')}
         response = requests.post(url, json=json, params=paramss).json()
         if 'error' in response:
-            return render_template('register.html', **params, message=messages_ru[response['error']])
+            return render_template('register.html', **params,
+                                   message=messages_ru[response['error']])
         return redirect('/')
     return render_template('register.html', **params)
 
@@ -117,17 +127,21 @@ def register():
 def login():
     form = LoginForm()
     main_css = url_for('static', filename='css/main_css.css')
-    params = {'title': 'Войти', 'styles': [main_css, url_for('static', filename='css/form_css.css')], 'form': form,
+    params = {'title': 'Войти', 'styles': [main_css, url_for('static',
+                                                             filename='css/form_css.css')],
+              'form': form,
               'user': current_user}
     if form.validate_on_submit():
         login, password, remember_me = form.login.data, form.password.data, form.remember_me.data
         url = 'http://127.0.0.1:5000/api/login'
         json = {'login': login, 'password': password}
         paramss = {'key': create_key('LOGIN')}
-        messages_ru = {'Login or password is wrong': 'Неверный логин или пароль'}
+        messages_ru = {
+            'Login or password is wrong': 'Неверный логин или пароль'}
         response = requests.get(url, json=json, params=paramss).json()
         if 'error' in response:
-            return render_template('login.html', **params, message=messages_ru[response['error']])
+            return render_template('login.html', **params,
+                                   message=messages_ru[response['error']])
         db_sess = db_session.create_session()
         user = db_sess.query(User).get(response['id'])
         login_user(user, remember=remember_me)
@@ -148,22 +162,22 @@ def up_score(user, score):
 def question():
     complexity_dict = {'easy': 1, 'normal': 5, 'hard': 25, 'impossible': 125}
     form = QuestionForm()
-    url = 'http://127.0.0.1:5000/api/question'
+    api_url = 'http://127.0.0.1:5000/api/question'
     main_css = url_for('static', filename='css/main_css.css')
     stage = request.args.get('stage', 'start')
-    params = {'title': 'Вопрос', 'styles': [main_css], 'form': form, 'user': current_user, 'stage': stage}
-    if 'country' not in request.cookies:
-        complexity = request.args.get('complexity', '')
-        paramss = {'key': "ER*los]NtTW:G14SH@", 'complexity': complexity}
-        response = requests.get(url, params=paramss).json()
-        country, variants, content, encoding = response['country'], response['variants'], response['content'], response[
-            'encoding']
+    params = {'title': 'Вопрос', 'styles': [main_css], 'form': form,
+              'user': current_user, 'stage': stage}
+    complexity = request.args.get('complexity', '')
+    country = request.cookies.get('country', '')
+    paramss = {'key': "ER*los]NtTW:G14SH@", 'complexity': complexity,
+               'country': country}
+    response = requests.get(api_url, params=paramss).json()
+    country, content, encoding = response['country'], response['content'], \
+                                 response['encoding']
+    if 'variants' in request.cookies:
+        variants = request.cookies['variants'].split('; ')
     else:
-        country, variants = request.cookies['country'], request.cookies['variants'].split('; ')
-        complexity = request.args.get('complexity', '')
-        paramss = {'key': "ER*los]NtTW:G14SH@", 'complexity': complexity, 'country': country}
-        response = requests.get(url, params=paramss).json()
-        content, encoding = response['content'], response['encoding']
+        variants = response['variants']
     content = bytes(content, encoding)
     content = 'data:image/jpeg;base64,' + str(base64.b64encode(content))[2:-1]
     params['content'] = content
@@ -175,7 +189,8 @@ def question():
     if stage != 'end':
         if request.method == 'POST':
             ans = form.ans.data if complexity == 'impossible' else form.select_f.data
-            res = make_response(redirect(f'/question?complexity={complexity}&stage=end&ans={ans}'))
+            res = make_response(redirect(
+                f'/question?complexity={complexity}&stage=end&ans={ans}'))
             return res
         res = make_response(render_template('question.html', **params))
         res.set_cookie('country', country, max_age=60 * 60)

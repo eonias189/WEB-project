@@ -1,7 +1,6 @@
 import requests
 import os
 import math
-import pygame
 from io import BytesIO
 from PIL import Image
 
