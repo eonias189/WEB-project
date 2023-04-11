@@ -14,7 +14,7 @@ from werkzeug.security import generate_password_hash
 from data import db_session
 from data.users import User
 from data.api_key_tools import create_key
-from flask_forms import RegisterForm, LoginForm, QuestionForm
+from flask_forms import RegisterForm, LoginForm, QuestionForm, GetQuestionForm
 
 db_session.global_init("db/country_guesser.db")
 session = db_session.create_session()
@@ -80,7 +80,10 @@ def error_page(message):
     main_css = url_for('static', filename='css/main_css.css')
     params = {'title': 'Ошибка', 'styles': [main_css], 'user': current_user,
               'message': message}
-    return render_template('error.html', **params)
+    res = make_response(render_template('error'.html, **params))
+    res.set_cookie('country', 'c', max_age=0)
+    res.set_cookie('variants', 'v', max_age=0)
+    return res
 
 
 @app.route('/user/<int:user_id>')
@@ -96,7 +99,10 @@ def user_profile(user_id):
                          url_for('static', filename='css/profile_css.css')],
               'user': current_user,
               'response': response['user']}
-    return render_template('profile.html', **params)
+    res = make_response(render_template('profile.html', **params))
+    res.set_cookie('country', 'c', max_age=0)
+    res.set_cookie('variants', 'v', max_age=0)
+    return res
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -120,7 +126,10 @@ def register():
             return render_template('register.html', **params,
                                    message=messages_ru[response['error']])
         return redirect('/')
-    return render_template('register.html', **params)
+    res = make_response(render_template('register.html', **params))
+    res.set_cookie('country', 'c', max_age=0)
+    res.set_cookie('variants', 'v', max_age=0)
+    return res
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -146,7 +155,10 @@ def login():
         user = db_sess.query(User).get(response['id'])
         login_user(user, remember=remember_me)
         return redirect('/')
-    return render_template('login.html', **params)
+    res = make_response(render_template('login.html', **params))
+    res.set_cookie('country', 'c', max_age=0)
+    res.set_cookie('variants', 'v', max_age=0)
+    return res
 
 
 def up_score(user, score):
@@ -156,6 +168,23 @@ def up_score(user, score):
     u_id = user.id
     url = f'http://127.0.0.1:5000/api/users/{u_id}'
     response = requests.put(url, params=params, json=js)
+
+
+@app.route('/get_question', methods=['POST', 'GET'])
+def get_question():
+    form = GetQuestionForm()
+    complexity_dict = {'легко': 'easy', 'нормально': 'normal', 'сложно': 'hard',
+                       'невозможно': 'impossible'}
+    main_css = url_for('static', filename='css/main_css.css')
+    params = {'title': 'Выберете сложность', 'styles': [main_css], 'form': form,
+              'user': current_user}
+    if form.validate_on_submit():
+        return redirect(
+            f'/question?complexity={complexity_dict.get(form.complexity.data, "")}')
+    res = make_response(render_template('get_question.html', **params))
+    res.set_cookie('country', 'c', max_age=0)
+    res.set_cookie('variants', 'v', max_age=0)
+    return res
 
 
 @app.route('/question', methods=['POST', 'GET'])

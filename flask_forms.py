@@ -7,8 +7,16 @@ from wtforms.validators import DataRequired
 class RegisterForm(FlaskForm):
     login = StringField('Логин', validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired()])
-    repeat_password = PasswordField('Повторите пароль', validators=[DataRequired()])
+    repeat_password = PasswordField('Повторите пароль',
+                                    validators=[DataRequired()])
     submit = SubmitField('Зарегистрироваться')
+
+
+class GetQuestionForm(FlaskForm):
+    complexity = SelectField(
+        choices=['легко', 'нормально', 'сложно', 'невозможно'],
+        validators=[DataRequired()])
+    submit = SubmitField('OK')
 
 
 class LoginForm(FlaskForm):
