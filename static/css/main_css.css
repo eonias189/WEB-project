@@ -1,5 +1,14 @@
+@font-face {
+font-family: 'Krutoi';
+src: url('krutoi.ttf');
+}
+
 h1 {
 text-align: center;
-color: Green}
+color: white;
+text-shadow: 1px 2px 3px black;
+letter-spacing: 1px;
+font-family: 'Krutoi'}
 body {
-background-color: Yellow;}
+background-image: url('https://media.tenor.com/S89fWSFaFowAAAAM/colors-pattern.gif');
+background-size: cover}

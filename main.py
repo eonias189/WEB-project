@@ -80,9 +80,7 @@ def error_page(message):
     main_css = url_for('static', filename='css/main_css.css')
     params = {'title': 'Ошибка', 'styles': [main_css], 'user': current_user,
               'message': message}
-    res = make_response(render_template('error'.html, **params))
-    res.set_cookie('country', 'c', max_age=0)
-    res.set_cookie('variants', 'v', max_age=0)
+    res = make_response(render_template('error.html', **params))
     return res
 
 
@@ -176,7 +174,7 @@ def get_question():
     complexity_dict = {'легко': 'easy', 'нормально': 'normal', 'сложно': 'hard',
                        'невозможно': 'impossible'}
     main_css = url_for('static', filename='css/main_css.css')
-    params = {'title': 'Выберете сложность', 'styles': [main_css], 'form': form,
+    params = {'title': 'Выберите сложность', 'styles': [main_css], 'form': form,
               'user': current_user}
     if form.validate_on_submit():
         return redirect(
@@ -202,7 +200,7 @@ def question():
                'country': country}
     response = requests.get(api_url, params=paramss).json()
     country, content, encoding = response['country'], response['content'], \
-                                 response['encoding']
+        response['encoding']
     if 'variants' in request.cookies:
         variants = request.cookies['variants'].split('; ')
     else:
@@ -220,6 +218,8 @@ def question():
             ans = form.ans.data if complexity == 'impossible' else form.select_f.data
             res = make_response(redirect(
                 f'/question?complexity={complexity}&stage=end&ans={ans}'))
+            res.set_cookie('country', country, max_age=60 * 60)
+            res.set_cookie('variants', '; '.join(variants), max_age=60 * 60)
             return res
         res = make_response(render_template('question.html', **params))
         res.set_cookie('country', country, max_age=60 * 60)
@@ -230,11 +230,11 @@ def question():
         form.select_f.data = ans
         form.ans.data = ans
         if ans.lower() == country.lower():
-            style_ = 'background-color: Green'
+            style_ = 'background-color:Green'
             if current_user.is_authenticated:
                 up_score(current_user, complexity_dict.get(complexity, 1))
         else:
-            style_ = 'background-color: Red'
+            style_ = 'background-color:Red'
         params['style_'] = style_
         params['next'] = f'/question?complexity={complexity}'
         res = make_response(render_template('question.html', **params))

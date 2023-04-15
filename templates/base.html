@@ -10,16 +10,27 @@
     <title>{{title}}</title>
 </head>
 <body>
-{% set button_style = "font-size:16px;border:1pxsolidgray;padding:3px;background-color:Green;border-radius:10px;" %}
+{% set button_style_="text-decoration:none;font-size:16px;font-family:'Krutoi';padding:5px;border-radius:10px;" %}
+{% set button_style=button_style_+"background-color:White" %}
+{% if style_ %}
+{% set ans_style=button_style_+style_ %}
+{% else %}
+{% set ans_style=button_style %}
+{% endif %}
 <p>
     {% if user.is_authenticated %}
     <a class="btn btn-primary" href="/user/{{user.id}}" style={{button_style}}>{{user.login}}</a>
     {% else %}
-    <a class="btn btn-primary" href="/register" style={{button_style}}>Зарегистрироватся</a>
+    <a class="btn btn-primary" href="/register" style={{button_style}}>Зарегистрироваться</a>
     <a class="btn btn-primary" href="/login" style={{button_style}}>Войти</a>
     {% endif %}
     <a class="btn btn-primary" href="/" style={{button_style}}>На главную</a>
 </p>
+{% if user.is_authenticated %}
+<p>
+    <a style={{button_style}}>Очки: {{user.score}}</a>
+</p>
+{% endif %}
 <!--Тут что-то до содержимого конкретной страницы-->
 <main role="main" class="container">
     {% block content %}{% endblock %}

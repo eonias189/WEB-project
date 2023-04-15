@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Выберите сложность</h2>
-<form action="" method="post">
-    {{ form.hidden_tag() }}
-    <p>{{form.complexity(style=style_)}}</p>
-    <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
-</form>
+<div style="display: flex; justify-content: center; align-items: center; height: 50vh;">
+    <h1>Выберите сложностьㅤㅤㅤ</h1>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>{{form.complexity(style=button_style)}}</p>
+        <p>{{ form.submit(type="submit", class="btn btn-primary", style=button_style) }}</p>
+    </form>
+</div>
 {% endblock %}
