@@ -1,0 +1,19 @@
+table {
+    border: 3px solid #571ea3;
+    margin-left: 30%;
+    width: 40%;
+    border-radius: 9px;
+    border-spacing: 0;
+    text-shadow: 0px 1px 1px black;
+    letter-spacing: 1px;
+    font-family: 'Krutoi'
+}
+th {
+   border: 2px solid #571ea3;
+   text-align: center;
+   background-color: #30da62;
+}
+td {
+    text-align: center;
+    border: 2px solid #571ea3;
+}

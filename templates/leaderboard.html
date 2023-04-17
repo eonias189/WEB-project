@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<table xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+    <thead>
+    <h1>Таблица лидеров</h1>
+    </thead>
+    </tbody>
+    <tr>
+        <th style="color:#571ea3">Позиция</th>
+        <th style="color:#571ea3">Имя пользователя</th>
+        <th style="color:#571ea3">Очки</th>
+    </tr>
+    {% for i in data %}
+    {% if loop.index == 1 %}
+    {% set bgc="Goldenrod" %}
+    {% elif loop.index == 2 %}
+    {% set bgc="Silver" %}
+    {% elif loop.index == 3 %}
+    {% set bgc="Sienna" %}
+    {% else %}
+    {% set bgc="#44e3ff" %}
+    {% endif %}
+    <tr>
+        <td>
+            <div style="color:#571ea3;background-color:{{bgc}}">{{loop.index}}
+            </div>
+        </td>
+        <td>
+            <div style="color:#571ea3;background-color:{{bgc}}">{{i["login"]}}
+            </div>
+        </td>
+        <td>
+            <div style="color:#571ea3;background-color:{{bgc}}">{{i["score"]}}
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
