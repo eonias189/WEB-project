@@ -262,6 +262,8 @@ def question():
                 up_score(current_user, complexity_dict.get(complexity, 1))
         else:
             style_ = 'background-color:Red'
+            if current_user.is_authenticated:
+                up_score(current_user, -complexity_dict.get(complexity, 1))
         params['style_'] = style_
         params['next'] = f'/question?complexity={complexity}'
         res = make_response(render_template('question.html', **params))
