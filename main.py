@@ -126,7 +126,8 @@ def register():
         new_url = 'http://127.0.0.1:5000/api/login'
         new_json = {'login': form.login.data, 'password': form.password.data}
         new_paramss = {'key': create_key('LOGIN')}
-        response = requests.get(new_url, json=new_json, params=new_paramss).json()
+        response = requests.get(new_url, json=new_json,
+                                params=new_paramss).json()
         db_sess = db_session.create_session()
         user = db_sess.query(User).get(response['id'])
         login_user(user)
@@ -177,13 +178,17 @@ def up_score(user, score):
 
 @app.route('/leaderboard')
 def leaderboard():
+    MAX_N = 100
     api_url = 'http://127.0.0.1:5000/api/users'
     paramss = {'key': create_key('GET')}
     data = requests.get(api_url, params=paramss).json()['users']
     data = sorted(data, key=lambda x: -x['score'])
+    n = MAX_N if len(data) > MAX_N else len(data)
+    data = data[:n]
     main_css = url_for('static', filename='css/main_css.css')
     table_css = url_for('static', filename='css/table_css.css')
-    params = {'title': 'Таблица лидеров', 'styles': [main_css, table_css], 'user': current_user, 'data': data}
+    params = {'title': 'Таблица лидеров', 'styles': [main_css, table_css],
+              'user': current_user, 'data': data}
     res = make_response(render_template('leaderboard.html', **params))
     res.set_cookie('country', 'c', max_age=0)
     res.set_cookie('variants', 'v', max_age=0)
@@ -222,7 +227,7 @@ def question():
                'country': country}
     response = requests.get(api_url, params=paramss).json()
     country, content, encoding = response['country'], response['content'], \
-        response['encoding']
+                                 response['encoding']
     if 'variants' in request.cookies:
         variants = request.cookies['variants'].split('; ')
     else:
