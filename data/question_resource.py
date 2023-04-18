@@ -15,14 +15,19 @@ def abort_if_access_denied(request):
 class QuestionResource(Resource):
     def get(self):
         abort_if_access_denied(request)
-        complexity_dict = {'easy': (0, 0, 3), 'normal': (1, 1, 1), 'hard': (0, 3, 0)}
-        complexity_level = {'easy': ['e'], 'normal': ['e', 'n'], 'hard': ['n', 'h']}
+        complexity_dict = {'easy': (0, 0, 3), 'normal': (1, 1, 1),
+                           'hard': (0, 3, 0)}
+        complexity_level = {'easy': ['e'], 'normal': ['e', 'n'],
+                            'hard': ['n', 'h']}
         db_sess = db_session.create_session()
         all_countries = db_sess.query(Country).all()
-        if 'complexity' in request.args and request.args['complexity'] in ['easy', 'normal', 'hard']:
+        if 'complexity' in request.args and request.args['complexity'] in [
+            'easy', 'normal', 'hard']:
             countries = db_sess.query(Country).filter(
-                Country.complexity.in_(complexity_level[request.args['complexity']])).all()
-            n_countries_name_like, n_neighbours, n_randoms = complexity_dict[request.args['complexity']]
+                Country.complexity.in_(
+                    complexity_level[request.args['complexity']])).all()
+            n_countries_name_like, n_neighbours, n_randoms = complexity_dict[
+                request.args['complexity']]
         else:
             countries = all_countries.copy()
             if request.args.get('complexity', '') == 'impossible':
@@ -37,16 +42,19 @@ class QuestionResource(Resource):
                 Country.name == request.args['country']).first():
             country = random.choice(countries)
         else:
-            country = db_sess.query(Country).filter(Country.name == request.args['country']).first()
+            country = db_sess.query(Country).filter(
+                Country.name == request.args['country']).first()
         country_coords = (country.latitude, country.longitude)
         neighbours = sorted(
-            [(i.name, get_dist((i.latitude, i.longitude), country_coords)) for i in all_countries if
+            [(i.name, get_dist((i.latitude, i.longitude), country_coords)) for i
+             in all_countries if
              i.name != country.name], key=lambda x: x[1])[
                      1:n_neighbours + 1]
         neighbours = [i[0] for i in neighbours]
-        variants_1 = db_sess.query(Country).filter(Country.name.like(f'{country.name[0]}%'),
-                                                   Country.name.not_like(country.name),
-                                                   Country.name.notin_(neighbours)).all()
+        variants_1 = db_sess.query(Country).filter(
+            Country.name.like(f'{country.name[0]}%'),
+            Country.name.not_like(country.name),
+            Country.name.notin_(neighbours)).all()
         if len(variants_1) < n_countries_name_like:
             n_randoms += 1
             variants = []
@@ -54,22 +62,32 @@ class QuestionResource(Resource):
             variants = random.sample(variants_1, n_countries_name_like)
         variants = [i.name for i in variants]
         randoms = random.sample(
-            [i.name for i in all_countries if i not in neighbours and i not in variants and i.name != country.name],
+            [i.name for i in all_countries if
+             i not in neighbours and i not in variants and i.name != country.name],
             n_randoms)
-        group_1 = ['Австралия', 'Алжир', 'Ангола', 'Аргентина', 'Афганистан', 'Боливия', 'Бразилия', 'Великобритания',
-                   'Венесуэла', 'Вьетнам', 'Германия', 'Гонконг', 'Египет', 'Замбия', 'Индия', 'Индонезия', 'Иран',
-                   'Исландия', 'Испания', 'Италия', 'Кабо-Верде', 'Казахстан', 'Камерун', 'Канада', 'Кипр', 'Китай',
+        group_1 = ['Австралия', 'Алжир', 'Ангола', 'Аргентина', 'Афганистан',
+                   'Боливия', 'Бразилия', 'Великобритания',
+                   'Венесуэла', 'Вьетнам', 'Германия', 'Гонконг', 'Египет',
+                   'Замбия', 'Индия', 'Индонезия', 'Иран',
+                   'Исландия', 'Испания', 'Италия', 'Кабо-Верде', 'Казахстан',
+                   'Камерун', 'Канада', 'Кипр', 'Китай',
                    'Колумбия',
-                   'Острова Кука', 'Ливия', 'Мавритания', 'Мали', 'Мексика', 'Мозамбик', 'Монако', 'Монголия', 'Мьянма',
-                   'Намибия', 'Нигер', 'Нигерия', 'Норвегия', 'Оман', 'Пакистан', 'Папуа Новая Гвинея', 'Перу',
+                   'Острова Кука', 'Ливия', 'Мавритания', 'Мали', 'Мексика',
+                   'Мозамбик', 'Монако', 'Монголия', 'Мьянма',
+                   'Намибия', 'Нигер', 'Нигерия', 'Норвегия', 'Оман',
+                   'Пакистан', 'Папуа Новая Гвинея', 'Перу',
                    'Португалия',
-                   'Сан-Томе и Принсипи', 'Саудовская Аравия', 'Остров Святой Елены', 'Сейшеллы', 'Сомали', 'Судан',
-                   'Таиланд',
-                   'Тайвань', 'Танзания', 'Токелау', 'Тонга', 'Тувалу', 'Туркменистан', 'Туркс и Кейкос', 'Турция',
-                   'Узбекистан', 'Украина', 'Фарерские о-ва', 'Филиппины', 'Финляндия', 'Франция',
-                   'Французская Полинезия', 'Чад', 'Чили', 'Швеция', 'Эквадор', 'Эфиопия', 'ЮАР', 'Кирибати',
+                   'Сан-Томе и Принсипи', 'Саудовская Аравия',
+                   'Остров Святой Елены', 'Сейшеллы', 'Сомали', 'Судан',
+                   'Таиланд', 'Танзания', 'Токелау', 'Тонга', 'Тувалу',
+                   'Туркменистан', 'Туркс и Кейкос', 'Турция',
+                   'Узбекистан', 'Украина', 'Фарерские о-ва', 'Филиппины',
+                   'Финляндия', 'Франция',
+                   'Французская Полинезия', 'Чад', 'Чили', 'Швеция', 'Эквадор',
+                   'Эфиопия', 'ЮАР', 'Кирибати',
                    'Новая Зеландия', 'Россия', 'США', 'Фиджи']
-        need_another_spn = {'Аргентина': 8, 'Острова Кука': 0.01, 'Норвегия': 6, 'Папуа Новая Гвинея': 4, 'Россия': 6,
+        need_another_spn = {'Аргентина': 8, 'Острова Кука': 0.01, 'Норвегия': 6,
+                            'Папуа Новая Гвинея': 4, 'Россия': 6,
                             'США': 8, 'Чили': 6}
         ll = f'{country.longitude},{country.latitude}'
         geo = (country.r, country.l, country.u, country.d)
@@ -91,5 +109,7 @@ class QuestionResource(Resource):
         else:
             variants = []
         random.shuffle(variants)
-        return jsonify({'country': country.name, 'content': content.decode('ISO-8859-1'), 'encoding': 'ISO-8859-1',
-                        'variants': variants})
+        return jsonify(
+            {'country': country.name, 'content': content.decode('ISO-8859-1'),
+             'encoding': 'ISO-8859-1',
+             'variants': variants})
