@@ -1,16 +1,16 @@
-os
-base64
-requests
-datetime
-flask
-flask_login
-flask_restful
-werkzeug
-json
-secrets
-sqlalchemy
-sqlalchemy_serializer
-math
-random
-flask_wtf
-wtforms
+pip install os
+pip install base64
+pip install requests
+pip install datetime
+pip install flask
+pip install flask_login
+pip install flask_restful
+pip install werkzeug
+pip install json
+pip install secrets
+pip install sqlalchemy
+pip install sqlalchemy_serializer
+pip install math
+pip install random
+pip install flask_wtf
+pip install wtforms
