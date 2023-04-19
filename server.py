@@ -32,7 +32,7 @@ api.add_resource(data.question_resource.QuestionResource, '/api/question')
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-button_style = "font-size:16px;border:1pxsolidgray;padding:3px;background-color:Green;border-radius:10px;"
+URL_SITE = 'http://127.0.0.1:5000'
 
 
 @app.errorhandler(400)
@@ -87,7 +87,7 @@ def error_page(message):
 @app.route('/user/<int:user_id>')
 def user_profile(user_id):
     main_css = url_for('static', filename='css/main_css.css')
-    url = f'http://127.0.0.1:5000/api/users/{user_id}'
+    url = f'{URL_SITE}/api/users/{user_id}'
     paramss = {'key': create_key('GET')}
     response = requests.get(url, params=paramss).json()
     if 'user' not in response:
@@ -115,7 +115,7 @@ def register():
             return render_template('register.html', **params,
                                    message='Пароли не совпадают')
         messages_ru = {'Login is already taken': 'Этот логин уже занят'}
-        url = 'http://127.0.0.1:5000/api/users'
+        url = f'{URL_SITE}/api/users'
         json = {'login': form.login.data,
                 'hashed_password': generate_password_hash(form.password.data)}
         paramss = {'key': create_key('POST')}
@@ -123,7 +123,7 @@ def register():
         if 'error' in response:
             return render_template('register.html', **params,
                                    message=messages_ru[response['error']])
-        new_url = 'http://127.0.0.1:5000/api/login'
+        new_url = f'{URL_SITE}/api/login'
         new_json = {'login': form.login.data, 'password': form.password.data}
         new_paramss = {'key': create_key('LOGIN')}
         response = requests.get(new_url, json=new_json,
@@ -148,7 +148,7 @@ def login():
               'user': current_user}
     if form.validate_on_submit():
         login, password, remember_me = form.login.data, form.password.data, form.remember_me.data
-        url = 'http://127.0.0.1:5000/api/login'
+        url = f'{URL_SITE}/api/login'
         json = {'login': login, 'password': password}
         paramss = {'key': create_key('LOGIN')}
         messages_ru = {
@@ -172,14 +172,14 @@ def up_score(user, score):
     score_was = user.score
     js = {'score': score_was + score}
     u_id = user.id
-    url = f'http://127.0.0.1:5000/api/users/{u_id}'
+    url = f'{URL_SITE}/api/users/{u_id}'
     response = requests.put(url, params=params, json=js)
 
 
 @app.route('/leaderboard')
 def leaderboard():
     MAX_N = 100
-    api_url = 'http://127.0.0.1:5000/api/users'
+    api_url = f'{URL_SITE}/api/users'
     paramss = {'key': create_key('GET')}
     data = requests.get(api_url, params=paramss).json()['users']
     data = sorted(data, key=lambda x: -x['score'])
@@ -216,7 +216,7 @@ def get_question():
 def question():
     complexity_dict = {'easy': 1, 'normal': 5, 'hard': 25, 'impossible': 125}
     form = QuestionForm()
-    api_url = 'http://127.0.0.1:5000/api/question'
+    api_url = f'{URL_SITE}/api/question'
     main_css = url_for('static', filename='css/main_css.css')
     stage = request.args.get('stage', 'start')
     params = {'title': 'Вопрос', 'styles': [main_css], 'form': form,
@@ -227,7 +227,7 @@ def question():
                'country': country}
     response = requests.get(api_url, params=paramss).json()
     country, content, encoding = response['country'], response['content'], \
-                                 response['encoding']
+        response['encoding']
     if 'variants' in request.cookies:
         variants = request.cookies['variants'].split('; ')
     else:
